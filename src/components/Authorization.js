@@ -288,17 +288,17 @@ class Authorization extends Component {
                 </View>
               </TouchableNativeFeedback>
             </View>
-            {this.state.loading ? (
+            <TouchableNativeFeedback
+              disabled={this.state.loading}
+              onPress={() => this.login()}>
               <View style={styles.button}>
-                <ActivityIndicator color="white" size="small" />
-              </View>
-            ) : (
-              <TouchableNativeFeedback onPress={() => this.login()}>
-                <View style={styles.button}>
+                {this.state.loading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
                   <Text style={styles.textButton}>Masuk</Text>
-                </View>
-              </TouchableNativeFeedback>
-            )}
+                )}
+              </View>
+            </TouchableNativeFeedback>
             <TouchableNativeFeedback
               onPress={() => this.setState({modal: true})}>
               <View style={{marginTop: 10}}>
@@ -488,9 +488,15 @@ class Authorization extends Component {
               </TouchableNativeFeedback>
             </View>
             <View style={{marginTop: -15}}></View>
-            <TouchableNativeFeedback onPress={() => this.register()}>
+            <TouchableNativeFeedback
+              disabled={this.state.loading}
+              onPress={() => this.register()}>
               <View style={styles.button}>
-                <Text style={styles.textButton}>Daftar</Text>
+                {this.state.loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={styles.textButton}>Daftar</Text>
+                )}
               </View>
             </TouchableNativeFeedback>
             <View
