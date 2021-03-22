@@ -1,24 +1,26 @@
 import React, {Component} from 'react';
 import CheckBox from '@react-native-community/checkbox';
+import {connect} from 'react-redux';
 import {
   Text,
   View,
   Alert,
   TextInput,
   Image,
-  StyleSheet,
   TouchableOpacity,
   TouchableNativeFeedback,
   ImageBackground,
   ActivityIndicator,
   ToastAndroid,
   ScrollView,
-  Button,
   Modal,
+  TouchableWithoutFeedback,
+  Linking,
 } from 'react-native';
 import {styles} from './styles';
+import AsyncStorage from '@react-native-community/async-storage';
 
-export default class Authorization extends Component {
+class Authorization extends Component {
   constructor() {
     super();
     this.state = {
@@ -32,11 +34,13 @@ export default class Authorization extends Component {
       secure2: true,
       remember: false,
       view: 'Login',
+      url: 'https://mail.google.com',
     };
   }
 
   login() {
     if (this.state.email && this.state.password != '') {
+      this.setState({loading: true});
       const {email, password} = this.state;
       const dataToSend = {
         email: email,
@@ -55,10 +59,12 @@ export default class Authorization extends Component {
       })
         .then(response => response.json())
         .then(responseJSON => {
+          console.log(responseJSON);
           if (responseJSON.status == 'Success') {
-            console.log(responseJSON);
+            this.props.userData({token: responseJSON.data});
+            AsyncStorage.setItem('token', responseJSON.token);
+            this.setState({loading: false});
           } else {
-            console.log(responseJSON);
             this.warning();
           }
         })
@@ -75,6 +81,7 @@ export default class Authorization extends Component {
       this.state.password &&
       this.state.password_confirmation != ''
     ) {
+      this.setState({loading: true});
       const {name, email, password, password_confirmation} = this.state;
       const dataToSend = {
         name: name,
@@ -95,10 +102,12 @@ export default class Authorization extends Component {
       })
         .then(response => response.json())
         .then(responseJSON => {
+          console.log(responseJSON);
           if (responseJSON.status == 'Success') {
-            console.log(responseJSON);
+            this.props.userData({token: responseJSON.data});
+            AsyncStorage.setItem('token', responseJSON.token);
+            this.setState({loading: false});
           } else {
-            console.log(responseJSON);
             this.warning();
           }
         })
@@ -107,6 +116,64 @@ export default class Authorization extends Component {
       ToastAndroid.show('Harap isi dengan benar', ToastAndroid.SHORT);
     }
   }
+
+  recovery() {
+    if (this.state.email != '') {
+      console.log('mengirim email..');
+      const {email} = this.state;
+      const dataToSend = {email: email};
+      let form = new FormData();
+      for (var key in dataToSend) {
+        form.append(key, dataToSend[key]);
+      }
+      fetch(``, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: form,
+      })
+        .then(response => response.json())
+        .then(responseJSON => {
+          console.log(responseJSON);
+          if (responseJSON.status == 'Success') {
+            this.successRecovery();
+          } else {
+            this.warning();
+          }
+        })
+        .catch(err => this.error(err));
+    } else {
+      ToastAndroid.show('Harap isi dengan benar', ToastAndroid.SHORT);
+    }
+  }
+
+  successRecovery() {
+    Alert.alert(
+      'Sukses',
+      'Kata sandi pemulihan telah dikirim.',
+      [
+        {
+          text: 'Nanti Saja',
+        },
+        {
+          text: 'Buka Email',
+          onPress: () => this.handlePress(),
+        },
+      ],
+      {cancelable: false},
+    );
+    this.setState({modal: false, loading: false});
+  }
+
+  handlePress = async () => {
+    const supported = await Linking.canOpenURL(this.state.url);
+    if (supported) {
+      await Linking.openURL(this.state.url);
+    } else {
+      Alert.alert(`Kami tidak mengenali URL ini: ${this.state.url}`);
+    }
+  };
 
   warning() {
     Alert.alert(
@@ -198,7 +265,7 @@ export default class Authorization extends Component {
                 )}
               </View>
             </View>
-            <View style={styles.viewSplitter}>
+            <View style={{...styles.viewSplitter, alignItems: 'center'}}>
               <View style={{alignItems: 'center', flexDirection: 'row'}}>
                 <CheckBox
                   onValueChange={() =>
@@ -245,58 +312,62 @@ export default class Authorization extends Component {
           transparent
           visible={this.state.modal}
           animationType="fade">
-          <View
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-              backgroundColor: '#00000069',
-            }}>
-            <View style={styles.modals}>
-              <View style={styles.modalHeader}>
-                <Image
-                  source={require('../assets/lock.png')}
-                  style={styles.imgHeader}
-                />
-                <Text>Reset Password</Text>
-                <TouchableOpacity onPress={() => this.setState({modal: false})}>
+          <TouchableWithoutFeedback
+            onPress={() => this.setState({modal: false})}>
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%',
+                backgroundColor: '#00000069',
+              }}>
+              <View style={styles.modals}>
+                <View style={styles.modalHeader}>
                   <Image
-                    source={require('../assets/close-button.png')}
+                    source={require('../assets/lock.png')}
                     style={styles.imgHeader}
                   />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.modalContainer}>
-                <Text> Masukan Email Anda</Text>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Image
-                    source={require('../assets/gmail-logo.png')}
-                    style={{...styles.imgLock, marginHorizontal: 2.5}}
-                  />
-                  <TextInput
-                    style={{flex: 1, marginHorizontal: 7}}
-                    underlineColorAndroid="orange"
-                    placeholder="Email"
-                    onChangeText={input => this.setState({email: input})}
-                  />
+                  <Text>Reset Password</Text>
+                  <TouchableOpacity
+                    onPress={() => this.setState({modal: false})}>
+                    <Image
+                      source={require('../assets/close-button.png')}
+                      style={styles.imgHeader}
+                    />
+                  </TouchableOpacity>
                 </View>
-                <TouchableNativeFeedback disabled={this.state.loading}>
-                  <View
-                    style={{
-                      ...styles.button,
-                      width: 120,
-                      alignSelf: 'center',
-                    }}>
-                    {this.state.loading ? (
-                      <ActivityIndicator size="small" color="white" />
-                    ) : (
-                      <Text style={styles.textButton}>Kirim Email</Text>
-                    )}
+                <View style={styles.modalContainer}>
+                  <Text> Masukan Email Anda</Text>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <Image
+                      source={require('../assets/gmail-logo.png')}
+                      style={{...styles.imgLock, marginHorizontal: 2.5}}
+                    />
+                    <TextInput
+                      style={{flex: 1, marginHorizontal: 7}}
+                      underlineColorAndroid="orange"
+                      placeholder="Email"
+                      onChangeText={input => this.setState({email: input})}
+                    />
                   </View>
-                </TouchableNativeFeedback>
+                  <TouchableNativeFeedback disabled={this.state.loading}>
+                    <View
+                      style={{
+                        ...styles.button,
+                        width: 120,
+                        alignSelf: 'center',
+                      }}>
+                      {this.state.loading ? (
+                        <ActivityIndicator size="small" color="white" />
+                      ) : (
+                        <Text style={styles.textButton}>Kirim Email</Text>
+                      )}
+                    </View>
+                  </TouchableNativeFeedback>
+                </View>
               </View>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
       </View>
     );
@@ -417,33 +488,41 @@ export default class Authorization extends Component {
               </TouchableNativeFeedback>
             </View>
             <View style={{marginTop: -15}}></View>
-            <TouchableNativeFeedback>
+            <TouchableNativeFeedback onPress={() => this.register()}>
               <View style={styles.button}>
                 <Text style={styles.textButton}>Daftar</Text>
               </View>
             </TouchableNativeFeedback>
-            <Text style={{color: 'grey', margin: 7}}>
-              {' '}
-              atau hubungkan dengan{' '}
-            </Text>
             <View
               style={{
                 flexDirection: 'row',
-                justifyContent: 'space-evenly',
                 width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}>
-              <TouchableOpacity>
-                <Image
-                  source={require('../assets/facebook-logo.png')}
-                  style={{width: 30, height: 30, tintColor: 'blue'}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Image
-                  source={require('../assets/google-plus-logo-on-black-background.png')}
-                  style={{width: 30, height: 30, tintColor: 'tomato'}}
-                />
-              </TouchableOpacity>
+              <Text style={{color: 'grey'}}>atau hubungkan</Text>
+              <View
+                style={{
+                  flex: 1,
+                  height: 1,
+                  marginHorizontal: 5,
+                  backgroundColor: 'grey',
+                }}
+              />
+              <View style={{flexDirection: 'row'}}>
+                <TouchableOpacity>
+                  <Image
+                    source={require('../assets/fb-round-logo.png')}
+                    style={{width: 30, height: 30, marginRight: 10}}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Image
+                    source={require('../assets/gplus-logo.png')}
+                    style={{width: 30, height: 30}}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </ScrollView>
@@ -463,3 +542,17 @@ export default class Authorization extends Component {
     );
   }
 }
+
+const MapStateToProps = state => {
+  return {
+    user: state,
+  };
+};
+
+const MapDispatchToProps = dispatch => {
+  return {
+    userData: input => dispatch({type: 'USER_DATA', payload: input}),
+  };
+};
+
+export default connect(MapStateToProps, MapDispatchToProps)(Authorization);
