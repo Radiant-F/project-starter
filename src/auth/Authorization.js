@@ -17,7 +17,7 @@ import {
   TouchableWithoutFeedback,
   Linking,
 } from 'react-native';
-import {styles} from './styles';
+import {styles} from '../components/styles';
 import AsyncStorage from '@react-native-community/async-storage';
 
 class Authorization extends Component {
@@ -300,7 +300,7 @@ class Authorization extends Component {
               </View>
             </TouchableNativeFeedback>
             <TouchableNativeFeedback
-              onPress={() => this.setState({modal: true})}>
+              onPress={() => this.props.navigation.replace('BottomTab')}>
               <View style={{marginTop: 10}}>
                 <Text style={{color: 'grey'}}>Lupa Password</Text>
               </View>
