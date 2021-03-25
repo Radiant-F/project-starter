@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     borderRadius: 5,
     elevation: 3,
     width: 90,
-    height: 45,
+    height: 50,
     justifyContent: 'center',
   },
   textButton: {
@@ -86,5 +86,29 @@ export const styles = StyleSheet.create({
   imgLock: {
     width: 25,
     height: 25,
+  },
+  header: {
+    padding: 12.5,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 5,
+  },
+  titleHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 20,
+    includeFontPadding: false,
+  },
+  viewOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomColor: 'grey',
+    borderBottomWidth: 0.5,
+    padding: 12.5,
+  },
+  iconOption: {
+    marginRight: 10,
   },
 });
