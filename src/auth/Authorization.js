@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import CheckBox from '@react-native-community/checkbox';
 import {connect} from 'react-redux';
+import AsyncStorage from '@react-native-community/async-storage';
+import {Picker} from '@react-native-picker/picker';
 import {
   Text,
   View,
@@ -18,7 +20,6 @@ import {
   Linking,
 } from 'react-native';
 import {styles} from '../components/styles';
-import AsyncStorage from '@react-native-community/async-storage';
 
 class Authorization extends Component {
   constructor() {
@@ -33,8 +34,14 @@ class Authorization extends Component {
       secure: true,
       secure2: true,
       remember: false,
-      view: 'Login',
+      view: 'NewRegister',
       url: 'https://mail.google.com',
+      daftar_provinsi: [],
+      id_provinsi: 0,
+      daftar_kota: [],
+      id_kota: 0,
+      daftar_kecamatan: [],
+      id_kecamatan: 0,
     };
   }
 
@@ -115,6 +122,44 @@ class Authorization extends Component {
     } else {
       ToastAndroid.show('Harap isi dengan benar', ToastAndroid.SHORT);
     }
+  }
+
+  componentDidMount() {
+    this.getProvincies();
+  }
+
+  getProvincies() {
+    console.log('mengambil  provinsi..');
+    fetch(`https://api.rajaongkir.sipondok.com/v1/provinsi`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(responseJSON => {
+        this.setState({daftar_provinsi: responseJSON});
+        console.log('provinsi dimuat');
+      })
+      .catch(err => console.log(err));
+  }
+
+  getCitiesPerProvinceID(id) {
+    console.log(id);
+    this.setState({id_provinsi: id});
+    console.log('mengambil  kota..');
+    fetch(`https://api.rajaongkir.sipondok.com/v1/kota?provinsi=${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(responseJSON => {
+        this.setState({daftar_kota: responseJSON});
+        console.log(this.state.daftar_kota);
+      })
+      .catch(err => console.log(err));
   }
 
   recovery() {
@@ -536,6 +581,170 @@ class Authorization extends Component {
     );
   }
 
+  viewNewRegister() {
+    return (
+      <View style={styles.subView}>
+        <ScrollView>
+          <View style={styles.mainSubView}>
+            <Text style={styles.text}> Register Baru </Text>
+            <View style={{width: '95%'}}>
+              <View style={{margin: 5}}></View>
+              <Text> Nama Lengkap</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Image
+                  source={require('../assets/user-outline.png')}
+                  style={styles.imgIcon}
+                />
+                <TextInput
+                  style={{flex: 1}}
+                  underlineColorAndroid="orange"
+                  placeholder="Masukan Nama Lengkap"
+                  onChangeText={input => this.setState({email: input})}
+                />
+              </View>
+              <View style={{margin: 5}}></View>
+              <View style={{margin: 5}}></View>
+              <Text> Email</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Image
+                  source={require('../assets/gmail-logo.png')}
+                  style={styles.imgIcon}
+                />
+                <TextInput
+                  style={{flex: 1}}
+                  underlineColorAndroid="orange"
+                  placeholder="surelanda@gmail.com"
+                  onChangeText={input => this.setState({email: input})}
+                />
+              </View>
+              <View style={{margin: 5}}></View>
+              <Text> Kata Sandi</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Image
+                  source={require('../assets/locked-padlock-outline.png')}
+                  style={styles.imgIcon}
+                />
+                <TextInput
+                  style={{flex: 1}}
+                  underlineColorAndroid="orange"
+                  secureTextEntry={this.state.secure}
+                  placeholder="Kata Sandi"
+                  onChangeText={input => this.setState({password: input})}
+                />
+                {this.state.secure ? (
+                  <TouchableOpacity
+                    onPress={() => this.setState({secure: !this.state.secure})}>
+                    <Image
+                      source={require('../assets/locked-padlock.png')}
+                      style={styles.imgIcon}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => this.setState({secure: !this.state.secure})}>
+                    <Image
+                      source={require('../assets/unlocked-padlock.png')}
+                      style={styles.imgIcon}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <View style={{margin: 5}}></View>
+              <Text> Konfirmasi Kata Sandi</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Image
+                  source={require('../assets/locked-padlock-outline.png')}
+                  style={styles.imgIcon}
+                />
+                <TextInput
+                  style={{flex: 1}}
+                  underlineColorAndroid="orange"
+                  secureTextEntry={this.state.secure2}
+                  placeholder="Konfirmasi Kata Sandi"
+                  onChangeText={input =>
+                    this.setState({password_confirmation: input})
+                  }
+                />
+                {this.state.secure2 ? (
+                  <TouchableOpacity
+                    onPress={() =>
+                      this.setState({secure2: !this.state.secure2})
+                    }>
+                    <Image
+                      source={require('../assets/locked-padlock.png')}
+                      style={styles.imgIcon}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() =>
+                      this.setState({secure2: !this.state.secure2})
+                    }>
+                    <Image
+                      source={require('../assets/unlocked-padlock.png')}
+                      style={styles.imgIcon}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <TouchableNativeFeedback
+                onPress={() => this.setState({view: 'Login'})}>
+                <View style={{alignSelf: 'flex-end'}}>
+                  <Text style={{color: 'black', fontWeight: 'bold'}}>
+                    Masuk
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+            <View style={{marginTop: -15}}></View>
+            <TouchableNativeFeedback
+              disabled={this.state.loading}
+              onPress={() => this.register()}>
+              <View style={styles.button}>
+                {this.state.loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={styles.textButton}>Daftar</Text>
+                )}
+              </View>
+            </TouchableNativeFeedback>
+            <View
+              style={{
+                flexDirection: 'row',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <Text style={{color: 'grey'}}>atau hubungkan</Text>
+              <View
+                style={{
+                  flex: 1,
+                  height: 1,
+                  marginHorizontal: 5,
+                  backgroundColor: 'grey',
+                }}
+              />
+              <View style={{flexDirection: 'row'}}>
+                <TouchableOpacity>
+                  <Image
+                    source={require('../assets/fb-round-logo.png')}
+                    style={{width: 30, height: 30, marginRight: 10}}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Image
+                    source={require('../assets/gplus-logo.png')}
+                    style={{width: 30, height: 30}}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
   render() {
     return (
       <ImageBackground style={styles.bg}>
@@ -543,6 +752,8 @@ class Authorization extends Component {
           ? this.viewLogin()
           : this.state.view == 'Register'
           ? this.viewRegister()
+          : this.state.view == 'NewRegister'
+          ? this.viewNewRegister()
           : ''}
       </ImageBackground>
     );
