@@ -67,7 +67,7 @@ export const styles = StyleSheet.create({
   modals: {
     backgroundColor: 'white',
     width: '90%',
-    borderRadius: 10,
+    borderRadius: 5,
     elevation: 3,
     padding: 10,
   },
@@ -110,5 +110,16 @@ export const styles = StyleSheet.create({
   },
   iconOption: {
     marginRight: 10,
+  },
+  inputAdress: {
+    width: '45%',
+    borderBottomColor: 'orange',
+    borderBottomWidth: 1,
+  },
+  viewMainModal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    backgroundColor: '#00000069',
   },
 });
