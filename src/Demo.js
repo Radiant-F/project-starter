@@ -35,26 +35,8 @@ export default class Demo extends Component {
       .catch(err => console.log(err));
   }
 
-  getCities() {
-    console.log('mengambil  kota..');
-    fetch(`https://api.rajaongkir.sipondok.com/v1/kota`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(responseJSON => {
-        this.setState({daftar_kota: responseJSON});
-        console.log('kota dimuat');
-        this.getKecamatanPerCityID();
-      })
-      .catch(err => console.log(err));
-  }
-
   getCitiesPerProvinceID(id) {
-    console.log(id);
-    this.setState({id_provinsi: id});
+    this.setState({id_provinsi: id, daftar_kota: []});
     console.log('mengambil  kota..');
     fetch(`https://api.rajaongkir.sipondok.com/v1/kota?provinsi=${id}`, {
       method: 'GET',
@@ -65,12 +47,14 @@ export default class Demo extends Component {
       .then(response => response.json())
       .then(responseJSON => {
         this.setState({daftar_kota: responseJSON});
-        console.log(this.state.daftar_kota);
+        console.log('kota diambil');
+        this.getKecamatanPerCityID(responseJSON[0].city_id);
       })
       .catch(err => console.log(err));
   }
 
   getKecamatanPerCityID(id) {
+    this.setState({daftar_kecamatan: []});
     this.setState({id_kota: id});
     console.log('mengambil  kecamatan..');
     fetch(`https://api.rajaongkir.sipondok.com/v1/kecamatan/kota/${id}`, {
@@ -81,6 +65,7 @@ export default class Demo extends Component {
     })
       .then(response => response.json())
       .then(responseJSON => {
+        console.log(responseJSON);
         this.setState({daftar_kecamatan: responseJSON});
         console.log('kecamatan dimuat');
       })
@@ -89,15 +74,10 @@ export default class Demo extends Component {
 
   render() {
     return (
-      <View>
-        <Text>Pilih Provinsi: </Text>
-        {this.state.daftar_provinsi.length < 1 ? (
-          <View style={{height: 55}}>
-            <Text>Memuat Provinsi..</Text>
-            <ActivityIndicator color="blue" size="large" />
-          </View>
-        ) : (
-          <View>
+      <View style={{flex: 1}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{width: '45%'}}>
+            <Text>Pilih Provinsi: </Text>
             <Picker
               selectedValue={this.state.id_provinsi}
               onValueChange={id => this.getCitiesPerProvinceID(id)}>
@@ -106,25 +86,21 @@ export default class Demo extends Component {
               ))}
             </Picker>
           </View>
-        )}
-        <Text>Pilih Kota/Kabupaten: </Text>
-        {this.state.daftar_kota.length < 1 ? (
-          <View style={{height: 55, justifyContent: 'center'}}>
-            <Text>Harap pilih provinsi</Text>
+          <View style={{width: '45%'}}>
+            <Text>Pilih Kota/Kabupaten: </Text>
+            <Picker
+              selectedValue={this.state.id_kota}
+              onValueChange={id => this.getKecamatanPerCityID(id)}>
+              {this.state.daftar_kota.map((v, i) => (
+                <Picker.Item key={i} label={v.city_name} value={v.city_id} />
+              ))}
+            </Picker>
           </View>
-        ) : (
-          <Picker
-            selectedValue={this.state.id_kota}
-            onValueChange={id => this.setState({id_kota: id})}>
-            {this.state.daftar_kota.map((v, i) => (
-              <Picker.Item key={i} label={v.city_name} value={v.city_id} />
-            ))}
-          </Picker>
-        )}
+        </View>
         <Text>Pilih Kecamatan: </Text>
         <Picker
           selectedValue={this.state.id_kecamatan}
-          onValueChange={id => this.getKecamatanPerCityID(id)}>
+          onValueChange={id => this.setState({id_kecamatan: id})}>
           {this.state.daftar_kecamatan.map((v, i) => (
             <Picker.Item
               key={i}
