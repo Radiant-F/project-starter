@@ -34,7 +34,7 @@ class Authorization extends Component {
       secure: true,
       secure2: true,
       remember: false,
-      view: 'NewRegister',
+      view: 'Login',
       url: 'https://mail.google.com',
       daftar_provinsi: [],
       id_provinsi: 0,
@@ -124,9 +124,9 @@ class Authorization extends Component {
     }
   }
 
-  componentDidMount() {
-    this.getProvincies();
-  }
+  // componentDidMount() {
+  //   this.getProvincies();
+  // }
 
   getProvincies() {
     console.log('mengambil  provinsi..');
@@ -145,8 +145,7 @@ class Authorization extends Component {
   }
 
   getCitiesPerProvinceID(id) {
-    console.log(id);
-    this.setState({id_provinsi: id});
+    this.setState({id_provinsi: id, daftar_kota: []});
     console.log('mengambil  kota..');
     fetch(`https://api.rajaongkir.sipondok.com/v1/kota?provinsi=${id}`, {
       method: 'GET',
@@ -157,7 +156,26 @@ class Authorization extends Component {
       .then(response => response.json())
       .then(responseJSON => {
         this.setState({daftar_kota: responseJSON});
-        console.log(this.state.daftar_kota);
+        console.log('kota diambil');
+        this.getKecamatanPerCityID(responseJSON[0].city_id);
+      })
+      .catch(err => console.log(err));
+  }
+
+  getKecamatanPerCityID(id) {
+    this.setState({id_kota: id, daftar_kecamatan: []});
+    console.log('mengambil  kecamatan..');
+    fetch(`https://api.rajaongkir.sipondok.com/v1/kecamatan/kota/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(responseJSON => {
+        console.log(responseJSON);
+        this.setState({daftar_kecamatan: responseJSON});
+        console.log('kecamatan dimuat');
       })
       .catch(err => console.log(err));
   }
@@ -335,7 +353,7 @@ class Authorization extends Component {
             </View>
             <TouchableNativeFeedback
               disabled={this.state.loading}
-              onPress={() => this.login()}>
+              onPress={() => this.props.navigation.navigate('BottomTab')}>
               <View style={styles.button}>
                 {this.state.loading ? (
                   <ActivityIndicator color="white" size="small" />
@@ -345,7 +363,7 @@ class Authorization extends Component {
               </View>
             </TouchableNativeFeedback>
             <TouchableNativeFeedback
-              onPress={() => this.props.navigation.replace('BottomTab')}>
+              onPress={() => this.setState({modal: true})}>
               <View style={{marginTop: 10}}>
                 <Text style={{color: 'grey'}}>Lupa Password</Text>
               </View>
@@ -359,13 +377,7 @@ class Authorization extends Component {
           animationType="fade">
           <TouchableWithoutFeedback
             onPress={() => this.setState({modal: false})}>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100%',
-                backgroundColor: '#00000069',
-              }}>
+            <View style={styles.viewMainModal}>
               <View style={styles.modals}>
                 <View style={styles.modalHeader}>
                   <Image
@@ -423,172 +435,9 @@ class Authorization extends Component {
       <View style={styles.subView}>
         <ScrollView>
           <View style={styles.mainSubView}>
-            <Text style={styles.text}> Register </Text>
-            <View style={{width: '95%'}}>
-              <View style={{margin: 5}}></View>
-              <Text> Nama Lengkap</Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('../assets/user-outline.png')}
-                  style={styles.imgIcon}
-                />
-                <TextInput
-                  style={{flex: 1}}
-                  underlineColorAndroid="orange"
-                  placeholder="Masukan Nama Lengkap"
-                  onChangeText={input => this.setState({email: input})}
-                />
-              </View>
-              <View style={{margin: 5}}></View>
-              <Text> Email</Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('../assets/gmail-logo.png')}
-                  style={styles.imgIcon}
-                />
-                <TextInput
-                  style={{flex: 1}}
-                  underlineColorAndroid="orange"
-                  placeholder="surelanda@gmail.com"
-                  onChangeText={input => this.setState({email: input})}
-                />
-              </View>
-              <View style={{margin: 5}}></View>
-              <Text> Kata Sandi</Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('../assets/locked-padlock-outline.png')}
-                  style={styles.imgIcon}
-                />
-                <TextInput
-                  style={{flex: 1}}
-                  underlineColorAndroid="orange"
-                  secureTextEntry={this.state.secure}
-                  placeholder="Kata Sandi"
-                  onChangeText={input => this.setState({password: input})}
-                />
-                {this.state.secure ? (
-                  <TouchableOpacity
-                    onPress={() => this.setState({secure: !this.state.secure})}>
-                    <Image
-                      source={require('../assets/locked-padlock.png')}
-                      style={styles.imgIcon}
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() => this.setState({secure: !this.state.secure})}>
-                    <Image
-                      source={require('../assets/unlocked-padlock.png')}
-                      style={styles.imgIcon}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={{margin: 5}}></View>
-              <Text> Konfirmasi Kata Sandi</Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('../assets/locked-padlock-outline.png')}
-                  style={styles.imgIcon}
-                />
-                <TextInput
-                  style={{flex: 1}}
-                  underlineColorAndroid="orange"
-                  secureTextEntry={this.state.secure2}
-                  placeholder="Konfirmasi Kata Sandi"
-                  onChangeText={input =>
-                    this.setState({password_confirmation: input})
-                  }
-                />
-                {this.state.secure2 ? (
-                  <TouchableOpacity
-                    onPress={() =>
-                      this.setState({secure2: !this.state.secure2})
-                    }>
-                    <Image
-                      source={require('../assets/locked-padlock.png')}
-                      style={styles.imgIcon}
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      this.setState({secure2: !this.state.secure2})
-                    }>
-                    <Image
-                      source={require('../assets/unlocked-padlock.png')}
-                      style={styles.imgIcon}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-              <TouchableNativeFeedback
-                onPress={() => this.setState({view: 'Login'})}>
-                <View style={{alignSelf: 'flex-end'}}>
-                  <Text style={{color: 'black', fontWeight: 'bold'}}>
-                    Masuk
-                  </Text>
-                </View>
-              </TouchableNativeFeedback>
-            </View>
-            <View style={{marginTop: -15}}></View>
-            <TouchableNativeFeedback
-              disabled={this.state.loading}
-              onPress={() => this.register()}>
-              <View style={styles.button}>
-                {this.state.loading ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Text style={styles.textButton}>Daftar</Text>
-                )}
-              </View>
-            </TouchableNativeFeedback>
-            <View
-              style={{
-                flexDirection: 'row',
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              <Text style={{color: 'grey'}}>atau hubungkan</Text>
-              <View
-                style={{
-                  flex: 1,
-                  height: 1,
-                  marginHorizontal: 5,
-                  backgroundColor: 'grey',
-                }}
-              />
-              <View style={{flexDirection: 'row'}}>
-                <TouchableOpacity>
-                  <Image
-                    source={require('../assets/fb-round-logo.png')}
-                    style={{width: 30, height: 30, marginRight: 10}}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Image
-                    source={require('../assets/gplus-logo.png')}
-                    style={{width: 30, height: 30}}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
-
-  viewNewRegister() {
-    return (
-      <View style={styles.subView}>
-        <ScrollView>
-          <View style={styles.mainSubView}>
             <Text style={styles.text}> Register Baru </Text>
             <View style={{width: '95%'}}>
-              <View style={{margin: 5}}></View>
+              <View style={{margin: 5}} />
               <Text> Nama Lengkap</Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
@@ -602,8 +451,54 @@ class Authorization extends Component {
                   onChangeText={input => this.setState({email: input})}
                 />
               </View>
-              <View style={{margin: 5}}></View>
-              <View style={{margin: 5}}></View>
+              <View style={{margin: 5}} />
+              <View
+                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <View style={styles.inputAdress}>
+                  <Text>Pilih Provinsi: </Text>
+                  <Picker
+                    selectedValue={this.state.id_provinsi}
+                    onValueChange={id => this.getCitiesPerProvinceID(id)}>
+                    {this.state.daftar_provinsi.map((v, i) => (
+                      <Picker.Item
+                        key={i}
+                        label={v.province}
+                        value={v.province_id}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+                <View style={styles.inputAdress}>
+                  <Text>Pilih Kab/Kota: </Text>
+                  <Picker
+                    selectedValue={this.state.id_kota}
+                    onValueChange={id => this.getKecamatanPerCityID(id)}>
+                    {this.state.daftar_kota.map((v, i) => (
+                      <Picker.Item
+                        key={i}
+                        label={v.city_name}
+                        value={v.city_id}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              <View style={{margin: 5}} />
+              <Text>Pilih Kecamatan: </Text>
+              <View style={{...styles.inputAdress, width: '100%'}}>
+                <Picker
+                  selectedValue={this.state.id_kecamatan}
+                  onValueChange={id => this.setState({id_kecamatan: id})}>
+                  {this.state.daftar_kecamatan.map((v, i) => (
+                    <Picker.Item
+                      key={i}
+                      label={v.subdistrict_name}
+                      value={v.subdistrict_id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+              <View style={{margin: 5}} />
               <Text> Email</Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
@@ -617,7 +512,7 @@ class Authorization extends Component {
                   onChangeText={input => this.setState({email: input})}
                 />
               </View>
-              <View style={{margin: 5}}></View>
+              <View style={{margin: 5}} />
               <Text> Kata Sandi</Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
@@ -649,7 +544,7 @@ class Authorization extends Component {
                   </TouchableOpacity>
                 )}
               </View>
-              <View style={{margin: 5}}></View>
+              <View style={{margin: 5}} />
               <Text> Konfirmasi Kata Sandi</Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
@@ -696,7 +591,7 @@ class Authorization extends Component {
                 </View>
               </TouchableNativeFeedback>
             </View>
-            <View style={{marginTop: -15}}></View>
+            <View style={{marginTop: -15}} />
             <TouchableNativeFeedback
               disabled={this.state.loading}
               onPress={() => this.register()}>
@@ -752,8 +647,6 @@ class Authorization extends Component {
           ? this.viewLogin()
           : this.state.view == 'Register'
           ? this.viewRegister()
-          : this.state.view == 'NewRegister'
-          ? this.viewNewRegister()
           : ''}
       </ImageBackground>
     );
