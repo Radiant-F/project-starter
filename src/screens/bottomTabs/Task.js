@@ -12,7 +12,7 @@ export default class Task extends Component {
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <TouchableNativeFeedback
               onPress={() => this.props.navigation.navigate('Pencarian')}>
-              <Icon name="magnify" size={30} style={{marginRight: 20}} />
+              <Icon name="magnify" size={30} style={{marginRight: 15}} />
             </TouchableNativeFeedback>
             <TouchableNativeFeedback onPress={() => console.log('pressed')}>
               <Icon name="cog" size={30} />
